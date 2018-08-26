@@ -22,7 +22,6 @@ def wordListGen(url,minlen,depth,leet):
 	if depth > 0:
 		depth -= 1
 		for link in soup.find_all('a'):
-			#print(link.get('href'))
 			words2, wordcount2 = wordListGen(url+'/'+link.get('href'),minlen,depth,leet)
 			wordcount += wordcount2
 			if words2 != None:
