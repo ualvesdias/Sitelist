@@ -6,7 +6,7 @@ import argparse as ap
 
 def wordListGen(url,minlen,depth,leet):
 	try:
-		req = r.get(url)
+		req = r.get(url, verify=False)
 	except:
 		print('Can\'t connect to '+url+'. Check the URL and your connection.')
 		return 
@@ -21,7 +21,9 @@ def wordListGen(url,minlen,depth,leet):
 			wordcount += 1
 	if depth > 0:
 		depth -= 1
-		for link in soup.find_all('a'):
+		for link in list(set(soup.find_all('a'))):
+			if link.get('href').startswith('http'):
+				continue
 			words2, wordcount2 = wordListGen(url+'/'+link.get('href'),minlen,depth,leet)
 			wordcount += wordcount2
 			if words2 != None:
@@ -63,7 +65,7 @@ def main():
 	parser = ap.ArgumentParser(description="Generate a wordlist from the contents of a URL.")
 	parser.add_argument('url', help='The target site address.')
 	parser.add_argument('-m', '--minlen', default=4, help='The minimum length for a word to be in the wordlist.', type=int)
-	parser.add_argument('-d', '--depth', default=0, help='The maximum depth of links to parse.', type=int)
+	parser.add_argument('-d', '--depth', default=1, help='The maximum depth of links to parse.', type=int)
 	parser.add_argument('-l', '--leet',  help='Generate modified words from the existing ones using leet substitution.', action='store_true')
 	parser.add_argument('-o', '--output',  help='Save wordlist to a file.')
 	args = parser.parse_args()
@@ -73,7 +75,11 @@ def main():
 	else:
 		args.url = 'http://'+args.url
 
+	#try:
 	wordlist, wordcount = wordListGen(args.url,args.minlen,args.depth,args.leet)
+	#except:
+	#	print('Could not retrieve wordlist.')
+	#	exit(1)
 
 	if args.output:
 		with open(args.output,'w') as file:
@@ -87,3 +93,4 @@ def main():
 
 if __name__ == '__main__':
 	main()
+
